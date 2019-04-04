@@ -24,16 +24,12 @@ vaderdata['Snowmix'] = np.where(vaderdata['Nedbtyp'] == 'SnöblandatRegn', '1', 
 
 del vaderdata['Nedbtyp']
 
-#Ta endast Tluft kolumnen
-#vaderdata_tluft = pd.DataFrame(vaderdata["TLuft"])
- 
-#Byt namn på kolumnen
-#vaderdata_tluft.columns = ["Tluft"]
- 
+
+
 #Ta medelvärdet per dag
-vaderdata_mean = vaderdata.groupby('Tidpunkt').apply(lambda x: x.resample('1d')['TLuft', 'TYta', 'Daggp', 'Lufu', 'Nedbtyp', 'Snow_mm', 'Rain_mm', 'Melted_mm', 'TYtaDaggp'])
- 
+vaderdata_mean = vaderdata.groupby('Tidpunkt').apply(lambda x: x.resample('1d')['TLuft'].agg(['mean']))
 print(vaderdata_mean)
+
 #vaderdata_tluft_mean = vaderdata_tluft.groupby('Tidpunkt').apply(lambda x: x.resample('1d')['Tluft'].agg(['mean','count']))
 vaderdata_mean = vaderdata_mean.reset_index(level=1, drop=True)
  
@@ -58,6 +54,7 @@ index_only.columns = ["Tid"]
 index_only = index_only.reset_index()
 #index_only = pd.to_datetime(molndal_trans["Tid"])
  
+print(index_only)
 luft = list()
  
 for j in range(len(vaderdata_mean)):
@@ -66,7 +63,6 @@ for j in range(len(vaderdata_mean)):
         if vaderdata_mean["Tidpunkt"][j] == index_only["Tid"][i]:
             print(vaderdata_mean["Tidpunkt"][j])
             print(i)
-            print(vaderdata_mean["Tluft mean"[j], "TYta mean"[j], "Daggp mean"[j], "Lufu mean"[j]])
             luft.append(vaderdata_mean["mean"][j])
  
  
