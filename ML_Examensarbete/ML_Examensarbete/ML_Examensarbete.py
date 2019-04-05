@@ -34,22 +34,7 @@ def groupMeans(columns):
         print(vaderdata_mean)
         #Sätt index tillbaka till kolumn
         vaderdata_mean.reset_index(level=0, inplace=True)
-        addMeanColumn(vaderdata_mean, index_only["Tid"], columns[i]+"_mean")
-
-
-#vaderdata_mean = vaderdata.groupby('Tidpunkt').apply(lambda x: x.resample('1d')['TLuft'].agg(['mean']))
-#vaderdata_mean = vaderdata.groupby('Tidpunkt').apply(lambda x: x.resample('1d')['TYta'].agg(['mean']))
-#vaderdata_mean = vaderdata.groupby('Tidpunkt').apply(lambda x: x.resample('1d')['Daggp'].agg(['mean']))
-#vaderdata_mean = vaderdata.groupby('Tidpunkt').apply(lambda x: x.resample('1d')['Lufu'].agg(['mean']))
-#vaderdata_mean = vaderdata.groupby('Tidpunkt').apply(lambda x: x.resample('1d')['TYtaDaggp'].agg(['mean']))
-#vaderdata_mean = vaderdata_mean.reset_index(level=1, drop=True)
-
-#vaderdata_tluft_mean = vaderdata_tluft.groupby('Tidpunkt').apply(lambda x: x.resample('1d')['Tluft'].agg(['mean','count']))
- 
-
-
-
-
+        addMeanColumn(vaderdata_mean, columns[i]+"_mean")
  
 #Läs in inSAR mätningar
 molndal = pd.read_csv(r"http://users.du.se/~h16wilwi/gik258/data/railway.csv", sep = ';')
@@ -59,6 +44,7 @@ molndal_trans = molndal.transpose()
 molndal_trans.reset_index(level=0, inplace=True)
 molndal_trans = molndal_trans.iloc[7:]
 
+print(molndal_trans)
 #Endast datum from mölndal data settet
 index_only = molndal_trans["index"]
 index_only = pd.to_datetime(index_only)
@@ -68,13 +54,15 @@ index_only = index_only.reset_index()
 #index_only = pd.to_datetime(molndal_trans["Tid"])
 
 
-def addMeanColumn(dataset, column, column_label):
+
+def addMeanColumn(dataset, column_label):
     meanList = list()
     for j in range(len(dataset)):
-        for i in range(len(column)):
-            if dataset["Tidpunkt"][j] == column[i]:
+        for i in range(len(index_only["Tid"])):
+            if dataset["Tidpunkt"][j] == index_only["Tid"][i]:
                 meanList.append(dataset["mean"][j])
 
+    print(meanList)
     #Matcha de beräknade värden till mölndal data framen
     index_only.loc[:,''+column_label+''] = pd.Series(meanList)
 
