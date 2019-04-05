@@ -37,11 +37,9 @@ molndal = pd.read_csv(r"http://users.du.se/~h16wilwi/gik258/data/railway.csv", s
 
 #Transponera data frame
 molndal_trans = molndal.transpose()
-print(molndal_trans)
 molndal_trans.reset_index(level=0, inplace=True)
 molndal_trans_pnt = molndal_trans.iloc[:7]
 # molndal_trans_pnt.set_index([pd.Index([0,1,2,3,4,5,6]),'index'])
-print(molndal_trans_pnt)
 
 molndal_trans = molndal_trans.iloc[7:]
 molndal_trans["index"] = pd.to_datetime(molndal_trans["index"])
@@ -60,29 +58,37 @@ def addMeanColumn(dataset, column_label):
         for i in range(len(index_only["Tid"])):
             if dataset["Tidpunkt"][j] == index_only["Tid"][i]:
                 meanList.append(dataset["mean"][j])
+
     #Matcha de beräknade värden till mölndal data framen
     index_only.loc[:,''+column_label+''] = pd.Series(meanList)
 
 def joinDatasets():
-    molndal_trans.reset_index(level=0, inplace=True)
-    result = pd.merge(molndal_trans, index_only, left_index=True, right_index=True)
-    del result['Tid']
+    print(molndal_trans.index.names)
+    #molndal_trans.reset_index(drop=True)
+    molndal_trans.rename(columns={"index": "Tid"}, inplace=True)
+    molndal_trans.set_index('Tid')
+    print(index_only.index.names)
+    #index_only.reset_index(drop=True)
+    index_only.set_index('Tid')    
+    dates =pd.merge(molndal_trans, index_only, on="Tid", how='outer', indicator=True)
+    print(dates)
+    dates = dates.set_index("index")
+    dates.rename(columns={"Tid": "index"}, inplace=True)
+    result = pd.concat([molndal_trans_pnt,dates], keys=['PNT', 'Dates'], sort=False)
     print(result)
-    result = pd.concat([molndal_trans_pnt, result], ignore_index=False)
-    print(result.index)
-    #result.index=result.index.droplevel(0)
-    #result.reset_index()
-    print(result)
-
+    # Skriver till excel
+    # write_to_excel()
+    
+def write_to_excel():
+    writer = ExcelWriter('dataset.xlsx', engine='xlsxwriter')
+    result.to_excel(writer, sheet_name="Sheet1")
+    writer.save()
 if __name__ == '__main__':
     column_list = list()
     column_list.extend(["TLuft", "TYta", "Daggp", "Lufu", "TYtaDaggp"])
-    print(column_list)
     groupMeans(column_list)
     print(index_only)
     joinDatasets()
+    
    
  
-#writer = ExcelWriter('.csv')
-#index_only.to_excel(writer)
-#writer.save()
