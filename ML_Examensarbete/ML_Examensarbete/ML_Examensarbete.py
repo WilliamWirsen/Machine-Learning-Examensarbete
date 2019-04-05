@@ -62,24 +62,17 @@ def addMeanColumn(dataset, column_label):
     #Matcha de beräknade värden till mölndal data framen
     index_only.loc[:,''+column_label+''] = pd.Series(meanList)
 
-def joinDatasets():
-    print(molndal_trans.index.names)
-    #molndal_trans.reset_index(drop=True)
-    molndal_trans.rename(columns={"index": "Tid"}, inplace=True)
-    molndal_trans.set_index('Tid')
-    print(index_only.index.names)
-    #index_only.reset_index(drop=True)
-    index_only.set_index('Tid')    
+def merge_datasets():
+    molndal_trans.rename(columns={"index": "Tid"}, inplace=True) 
     dates =pd.merge(molndal_trans, index_only, on="Tid", how='outer', indicator=True)
-    print(dates)
     dates = dates.set_index("index")
     dates.rename(columns={"Tid": "index"}, inplace=True)
     result = pd.concat([molndal_trans_pnt,dates], keys=['PNT', 'Dates'], sort=False)
-    print(result)
+    # TODO: Remove NaN above mean values with fillna method 
     # Skriver till excel
-    # write_to_excel()
+    write_to_excel(result)
     
-def write_to_excel():
+def write_to_excel(result):
     writer = ExcelWriter('dataset.xlsx', engine='xlsxwriter')
     result.to_excel(writer, sheet_name="Sheet1")
     writer.save()
@@ -88,7 +81,7 @@ if __name__ == '__main__':
     column_list.extend(["TLuft", "TYta", "Daggp", "Lufu", "TYtaDaggp"])
     groupMeans(column_list)
     print(index_only)
-    joinDatasets()
+    merge_datasets()
     
    
  
