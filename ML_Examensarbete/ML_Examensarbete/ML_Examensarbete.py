@@ -64,13 +64,23 @@ def addMeanColumn(dataset, column_label):
 
 def merge_datasets():
     molndal_trans.rename(columns={"index": "Tid"}, inplace=True) 
-    dates =pd.merge(molndal_trans, index_only, on="Tid", how='outer', indicator=True)
+    dates =pd.merge(molndal_trans, index_only, on="Tid", how='outer')
     dates = dates.set_index("index")
     dates.rename(columns={"Tid": "index"}, inplace=True)
     result = pd.concat([molndal_trans_pnt,dates], keys=['PNT', 'Dates'], sort=False)
+    result["TLuft_mean"].fillna("-", inplace = True)
+    result["TYta_mean"].fillna("-", inplace = True)
+    result["Daggp_mean"].fillna("-", inplace = True)
+    result["Lufu_mean"].fillna("-", inplace = True)
+    result["TYtaDaggp_mean"].fillna("-", inplace = True)
+    print(result)
+
     # TODO: Remove NaN above mean values with fillna method 
-    # Skriver till excel
-    write_to_excel(result)
+    # Skriver till excel,
+    newResultset = result.transpose()
+    write_to_excel(newResultset)
+    
+    #newResultset.to_csv('datasheet.csv', encoding='utf-8', sep=';', index=False)
     
 def write_to_excel(result):
     writer = ExcelWriter('dataset.xlsx', engine='xlsxwriter')
