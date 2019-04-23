@@ -50,7 +50,7 @@ print(molndal_trans)
 # Resample and interpolate
 molndal_trans = molndal_trans.apply(pd.to_numeric)
 molndal_trans = molndal_trans.resample('D').interpolate(method='linear')
-molndal_trans = molndal_trans.reset_index(level=0, inplace=True, drop=False)
+molndal_trans.reset_index(level=0, inplace=True, drop=False)
 
 print(molndal_trans)
 
@@ -98,6 +98,7 @@ def merge_datasets():
     
 def write_to_excel(result):
     writer = ExcelWriter('dataset-examensarbete.xlsx', engine='xlsxwriter')
+    writer.book.use_zip64()
     result.to_excel(writer, sheet_name="Blad1")
     writer.save()
 
