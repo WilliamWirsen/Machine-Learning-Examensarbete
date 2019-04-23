@@ -43,6 +43,15 @@ molndal_trans_pnt = molndal_trans.iloc[:7]
 
 molndal_trans = molndal_trans.iloc[7:]
 molndal_trans["index"] = pd.to_datetime(molndal_trans["index"])
+molndal_trans = molndal_trans.set_index(['index'])
+
+print(series)
+
+molndal_trans = molndal_trans.apply(pd.to_numeric)
+
+molndal_trans = molndal_trans.resample('D').interpolate(method='linear')
+
+molndal_trans = molndal_trans.reset_index(level=0, inplace=True, drop=False)
 
 #Endast datum from mölndal data settet
 index_only = molndal_trans["index"]
