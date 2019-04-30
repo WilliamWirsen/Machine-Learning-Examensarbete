@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from bisect import bisect_left  
 from pandas import ExcelWriter
 from pandas import ExcelFile
  
@@ -23,15 +24,27 @@ vaderdata['Snowmix'] = np.where(vaderdata['Nedbtyp'] == 'SnöblandatRegn', 1, 0)
 
 del vaderdata['Nedbtyp']
 # Ta medelvärdet per dag
-def groupMeans(columns):
+def groupColumns(columns, sum_columns):
+    type = ""
     for i in range(len(columns)):
-        vaderdata_mean = vaderdata.groupby('Tidpunkt').apply(lambda x: x.resample('1d')[''+columns[i]+''].agg(['mean']))
+        for j in range(len(sum_columns)):
+            if(columns[i] == sum_columns[j]):
+                print(sum_column_list[j]+ " existerar")
+                vaderdata_mean = vaderdata.groupby('Tidpunkt').apply(lambda x: x.resample('1d')[''+columns[i]+''].agg(['sum']))
+                type = "sum"
+                break
+            else:
+                print("{}: {} ".format("index", j))
+                vaderdata_mean = vaderdata.groupby('Tidpunkt').apply(lambda x: x.resample('1d')[''+columns[i]+''].agg(['mean']))        
+                type = "mean"
         vaderdata_mean = vaderdata_mean.reset_index(level=1, drop=True)
-        print("Column: " + columns[i])
+        print("{}: {}".format('Column', columns[i]))
+        print("{}: {}".format('Type ', type))
         #Sätt index tillbaka till kolumn
         vaderdata_mean.reset_index(level=0, inplace=True)
         print(vaderdata_mean)
-        addMeanColumn(vaderdata_mean, columns[i]+"_mean")
+        addColumn(vaderdata_mean, columns[i], type)
+      
  
 #Läs in inSAR mätningar
 molndal = pd.read_csv(r"http://users.du.se/~h16wilwi/gik258/data/railway.csv", sep = ';')
@@ -62,16 +75,15 @@ index_only.columns = ["Tid"]
 index_only = index_only.reset_index()
 #index_only = pd.to_datetime(molndal_trans["Tid"])
 
-def addMeanColumn(dataset, column_label):
-    meanList = list()
+def addColumn(dataset, column, type):
+    myList = list()
     for j in range(len(dataset)):
         for i in range(len(index_only["Tid"])):
             if dataset["Tidpunkt"][j] == index_only["Tid"][i]:
-                meanList.append(dataset["mean"][j])
-               
+                myList.append(dataset[type][j])  
 
     #Matcha de beräknade värden till mölndal data framen
-    index_only.loc[:,''+column_label+''] = pd.Series(meanList)
+    index_only.loc[:,''+column+'_'+type] = pd.Series(myList)
     print(index_only)
 
 
@@ -104,10 +116,11 @@ def write_to_excel(result):
 
 if __name__ == '__main__':
     column_list = list()
-    column_list.extend(["TLuft", "TYta", "Daggp", "Lufu", "Snow_mm","Rain_mm","Melted_mm", "TYtaDaggp", "Snow", "Sun", "Rain", "Snowmix"])
-    
+    sum_column_list = list()
+    column_list.extend(["TLuft", "TYta", "Daggp", "Lufu", "Snow_mm","Rain_mm","Melted_mm", "TYtaDaggp",  "Snow", "Sun", "Rain", "Snowmix"])
+    sum_column_list.extend(["Snow_mm","Rain_mm","Melted_mm"])
     print(vaderdata)
-    groupMeans(column_list)
+    groupColumns(column_list, sum_column_list)
     print(index_only)
     merge_datasets()
     
